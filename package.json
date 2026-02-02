@@ -1,0 +1,32 @@
+{
+  "name": "botera-inbox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "NODE_ENV=production node --import ./loader/loader-register.mjs scripts/start.mjs",
+    "dev": "NODE_ENV=development sh run.sh",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.1",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "mongodb": "6.19.0",
+    "morgan": "^1.10.1",
+    "response-time": "^2.3.4",
+    "zlib": "^1.0.5"
+  }
+}
