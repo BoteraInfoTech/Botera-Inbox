@@ -1,5 +1,7 @@
 export const FacebookReceiver = async (req, res) => {
   try {
+    console.dir({ body: req.body }, { depth: null });
+
     const entry = req.body.entry?.[0];
     if (!entry) return res.sendStatus(200);
 
@@ -24,7 +26,7 @@ export const FacebookReceiver = async (req, res) => {
       rawPayload: messagingEvent,
     };
 
-    console.log({ normalizedMessage, entry });
+    console.log({ normalizedMessage });
 
     // // 1️⃣ Save message (dedupe-safe)
     // const savedMessage = await Message.findOneAndUpdate(

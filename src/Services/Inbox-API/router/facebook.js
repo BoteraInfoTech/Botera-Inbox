@@ -3,9 +3,12 @@ import { FacebookReceiver } from '../controller/facebook';
 const router = express.Router();
 
 // open Endpoints
-router.post('/', () => {});
 
-router.get('/facebook', () => {});
+router.get('/facebook', (req, res) => {
+  return res
+    .status(200)
+    .json({ message: 'webhook is healthy', code: 200, status: 'success' });
+});
 router.post('/facebook', FacebookReceiver);
 
 export default router;
