@@ -1,32 +1,41 @@
+import config from '../../../config/index';
+import client from '../../../mongoDB/index';
+
 export const FacebookReceiver = async (req, res) => {
   try {
-    console.dir({ body: req.body }, { depth: null });
+    console.log('Facebook webhook received:');
 
-    const entry = req.body.entry?.[0];
-    if (!entry) return res.sendStatus(200);
+    const db = client.db(config.dbConfig.DB);
+    await db.collection('test').insertOne({
+      body: JSON.stringify(req.body),
+      receivedAt: new Date(),
+    });
 
-    const pageId = entry.id;
-    const messagingEvent = entry.messaging?.[0];
-    if (!messagingEvent?.message) return res.sendStatus(200);
+    // const entry = req.body.entry?.[0];
+    // if (!entry) return res.sendStatus(200);
 
-    const { sender, timestamp, message } = messagingEvent;
+    // const pageId = entry.id;
+    // const messagingEvent = entry.messaging?.[0];
+    // if (!messagingEvent?.message) return res.sendStatus(200);
 
-    const conversationId = `${pageId}_${sender.id}`;
+    // const { sender, timestamp, message } = messagingEvent;
 
-    const normalizedMessage = {
-      platform: 'facebook',
-      pageId,
-      conversationId,
-      messageId: message.mid,
-      senderId: sender.id,
-      senderName: null, // can fetch later using Graph API
-      text: message.text || '',
-      attachments: message.attachments || null,
-      timestamp,
-      rawPayload: messagingEvent,
-    };
+    // const conversationId = `${pageId}_${sender.id}`;
 
-    console.log({ normalizedMessage });
+    // const normalizedMessage = {
+    //   platform: 'facebook',
+    //   pageId,
+    //   conversationId,
+    //   messageId: message.mid,
+    //   senderId: sender.id,
+    //   senderName: null, // can fetch later using Graph API
+    //   text: message.text || '',
+    //   attachments: message.attachments || null,
+    //   timestamp,
+    //   rawPayload: messagingEvent,
+    // };
+
+    // console.log({ normalizedMessage });
 
     // // 1️⃣ Save message (dedupe-safe)
     // const savedMessage = await Message.findOneAndUpdate(
