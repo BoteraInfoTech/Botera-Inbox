@@ -1,14 +1,8 @@
 import express from 'express';
-import { FacebookReceiver } from '../controller/facebook';
+import { FacebookReceiver, FacebookVerifier } from '../controller/facebook';
 const router = express.Router();
 
-// open Endpoints
-
-router.get('/webhook', (req, res) => {
-  return res
-    .status(200)
-    .json({ message: 'webhook is healthy', code: 200, status: 'success' });
-});
+router.get('/webhook', FacebookVerifier);
 router.post('/webhook', FacebookReceiver);
 
 export default router;
