@@ -65,3 +65,16 @@ export const FacebookReceiver = async (req, res) => {
     return res.sendStatus(200); // never fail webhook
   }
 };
+
+export const FacebookVerifier = (req, res) => {
+  const VERIFY_TOKEN = 'b7I8s6n3o1b3a9o2t2x6m0e2a2a0e0r2r7t2ae';
+
+  if (
+    req.query['hub.mode'] === 'subscribe' &&
+    req.query['hub.verify_token'] === VERIFY_TOKEN
+  ) {
+    return res.status(200).send(req.query['hub.challenge']);
+  }
+
+  res.sendStatus(403);
+};
