@@ -25,9 +25,10 @@ app.use(
   })
 );
 app.use(cookieParser()); // Parse cookies
-app.use(bodyParser.json()); // Parse JSON
-app.use(bodyParser.text()); // Parse plain text
-app.use(bodyParser.urlencoded({ extended: true })); // Parse form data
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && 'body' in err) {
     return res.status(422).json({ error: 'Invalid Body' });
