@@ -1,77 +1,47 @@
-import config from '../../../config/index';
-import client from '../../../mongoDB/index';
+import mongoDB from '../../../mongoDB/index';
+import * as conversationDetailsQuery from '../../../mongoDB/query/conversationDetails.js';
+import * as MessageQueries from '../../../mongoDB/query/messageDetails.js';
 
 export const FacebookReceiver = async (req, res) => {
   try {
-    console.log('Facebook webhook received:');
+    const entry = req.body.entry?.[0];
+    if (!entry) return res.sendStatus(200);
 
-    const db = client.db(config.dbConfig.DB);
-    await db.collection('test').insertOne({
-      body: JSON.stringify(req.body),
-      receivedAt: new Date(),
+    const pageId = entry.id;
+    const messagingEvent = entry.messaging?.[0];
+    if (!messagingEvent?.message) return res.sendStatus(200);
+
+    const { sender, timestamp, message } = messagingEvent;
+
+    const conversationId = `${pageId}_${sender.id}`;
+
+    const normalizedMessage = {
+      platform: 'facebook',
+      pageId,
+      conversationId,
+      messageId: message.mid,
+      senderId: sender.id,
+      text: message.text || '',
+      attachments: message.attachments || null,
+      timestamp,
+      rawPayload: messagingEvent,
+    };
+
+    await MessageQueries.upsertMessageDetails(mongoDB, normalizedMessage);
+
+    await conversationDetailsQuery.upsertConversationDetails(mongoDB, {
+      platform: 'facebook',
+      pageId,
+      conversationId,
+      participants: [sender.id, pageId],
+      lastMessage: normalizedMessage.text,
+      lastMessageAt: timestamp,
     });
-
-    // const entry = req.body.entry?.[0];
-    // if (!entry) return res.sendStatus(200);
-
-    // const pageId = entry.id;
-    // const messagingEvent = entry.messaging?.[0];
-    // if (!messagingEvent?.message) return res.sendStatus(200);
-
-    // const { sender, timestamp, message } = messagingEvent;
-
-    // const conversationId = `${pageId}_${sender.id}`;
-
-    // const normalizedMessage = {
-    //   platform: 'facebook',
-    //   pageId,
-    //   conversationId,
-    //   messageId: message.mid,
-    //   senderId: sender.id,
-    //   senderName: null, // can fetch later using Graph API
-    //   text: message.text || '',
-    //   attachments: message.attachments || null,
-    //   timestamp,
-    //   rawPayload: messagingEvent,
-    // };
-
-    // console.log({ normalizedMessage });
-
-    // // 1️⃣ Save message (dedupe-safe)
-    // const savedMessage = await Message.findOneAndUpdate(
-    //   { messageId: normalizedMessage.messageId },
-    //   normalizedMessage,
-    //   { upsert: true, new: true }
-    // );
-
-    // // 2️⃣ Update / create conversation
-    // await Conversation.findOneAndUpdate(
-    //   { conversationId },
-    //   {
-    //     platform: 'facebook',
-    //     pageId,
-    //     conversationId,
-    //     participants: [sender.id, pageId],
-    //     lastMessage: normalizedMessage.text,
-    //     lastMessageAt: timestamp,
-    //   },
-    //   { upsert: true }
-    // );
-
-    // // 3️⃣ Emit to socket (via Redis pub/sub)
-    // await redis.publish(
-    //   'socket_events',
-    //   JSON.stringify({
-    //     type: 'NEW_MESSAGE',
-    //     conversationId,
-    //     payload: savedMessage,
-    //   })
-    // );
 
     return res.sendStatus(200);
   } catch (err) {
     console.error('Facebook webhook error:', err);
-    return res.sendStatus(200); // never fail webhook
+    return res.sendStatus(200);
   }
 };
 
